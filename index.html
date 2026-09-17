@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Abacus Competition 2026 — NBCI Registration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  :root{
+    --paper:#F7F5EF;
+    --paper-raised:#FFFFFF;
+    --ink:#20262B;
+    --ink-soft:#5C6670;
+    --line:#D8D2C2;
+    --navy:#12293A;
+    --navy-deep:#0B1B27;
+    --gold:#A87C1F;
+    --gold-bright:#C99A34;
+    --gold-soft:#EFE3C4;
+    --good:#2F6B49;
+    --bad:#A63A34;
+    --radius:4px;
+    --shadow:none;
+  }
+  :root:not([data-theme="light"]){
+    @media (prefers-color-scheme: dark){
+      --paper:#14181B;
+      --paper-raised:#1C2226;
+      --ink:#E9E5D9;
+      --ink-soft:#A2ABAF;
+      --line:#333B3E;
+      --navy:#8FB2C7;
+      --navy-deep:#0B1B27;
+      --gold:#D0A94A;
+      --gold-bright:#E3BE63;
+      --gold-soft:#31291A;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#14181B;
+    --paper-raised:#1C2226;
+    --ink:#E9E5D9;
+    --ink-soft:#A2ABAF;
+    --line:#333B3E;
+    --navy:#8FB2C7;
+    --navy-deep:#0B1B27;
+    --gold:#D0A94A;
+    --gold-bright:#E3BE63;
+    --gold-soft:#31291A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Work Sans', sans-serif; line-height:1.5;
+    padding-bottom:60px;
+  }
+  h1,h2,h3{ font-family:'Playfair Display', serif; font-weight:700; margin:0; color:var(--ink); }
+  a{ color:var(--navy); }
+  .wrap{ max-width:640px; margin:0 auto; padding:0 18px; }
+
+  /* ---------- official letterhead ---------- */
+  .letterhead{
+    background:var(--navy-deep); color:#EDE9DC; padding:26px 18px 24px; text-align:center;
+  }
+  .lh-row{
+    display:flex; align-items:center; justify-content:center; gap:14px;
+    max-width:520px; margin:0 auto;
+  }
+  .lh-seal{ flex-shrink:0; }
+  .lh-text{ text-align:left; }
+  .lh-name{ font-family:'Playfair Display', serif; font-weight:700; font-size:clamp(17px,4.6vw,21px); color:#F7F3E6; line-height:1.25; }
+  .lh-sub{ font-size:12px; letter-spacing:0.03em; color:var(--gold-bright); margin-top:3px; text-transform:uppercase; }
+  .lh-addr{ font-size:11.5px; color:#B9C2C6; margin-top:4px; line-height:1.4; }
+  .lh-rule{ max-width:420px; margin:18px auto 16px; height:5px; border-top:1.5px solid var(--gold); border-bottom:1px solid var(--gold); }
+  .letterhead h1{ color:#F7F3E6; font-size:clamp(24px,6vw,32px); letter-spacing:0.01em; }
+  .lh-tag{ margin-top:6px; font-size:13.5px; color:#CBD4D7; font-style:italic; }
+  .event-facts{
+    margin:20px auto 0; display:grid; grid-template-columns:1fr 1fr; gap:10px 18px;
+    font-size:13px; color:#E7EEEF; max-width:440px; text-align:left;
+  }
+  .event-facts div span{ display:block; color:var(--gold-bright); font-size:10.5px; letter-spacing:0.03em; text-transform:uppercase; margin-bottom:2px; }
+  .letterhead .contact{ margin-top:16px; font-size:12.5px; color:#AEB8BC; }
+
+  /* ---------- steps ---------- */
+  .steps{ display:flex; gap:6px; padding:16px 18px 0; max-width:640px; margin:0 auto; }
+  .step-dot{ flex:1; height:4px; border-radius:2px; background:var(--line); }
+  .step-dot.done, .step-dot.active{ background:var(--gold); }
+
+  section.screen{ display:none; padding:22px 0 10px; }
+  section.screen.active{ display:block; }
+
+  .card{
+    background:var(--paper-raised); border:1px solid var(--line); border-radius:var(--radius);
+    padding:20px; margin-bottom:16px; border-top:3px solid var(--navy);
+  }
+  .sec-head{ display:flex; align-items:center; gap:11px; margin-bottom:4px; }
+  .sec-num{
+    width:27px; height:27px; border-radius:50%; background:var(--navy); color:var(--gold-bright);
+    font-family:'Playfair Display',serif; font-weight:700; font-size:14px;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .card h2{ font-size:17.5px; margin-bottom:0; letter-spacing:0.01em; }
+  .card .hint{ font-size:13px; color:var(--ink-soft); margin:6px 0 14px; padding-left:38px; }
+
+
+  label{ display:block; font-size:13.5px; font-weight:500; margin:12px 0 5px; color:var(--ink); }
+  label .req{ color:var(--bad); }
+  input[type=text], input[type=date], input[type=number], input[type=tel], input[type=email], select, textarea{
+    width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:8px;
+    font-size:15px; font-family:inherit; background:var(--paper); color:var(--ink);
+  }
+  input:focus, select:focus, textarea:focus{ outline:2px solid var(--navy); outline-offset:1px; }
+  .radio-row{ display:flex; gap:16px; flex-wrap:wrap; margin-top:4px; }
+  .radio-opt{ display:flex; align-items:center; gap:6px; font-size:14.5px; }
+  .radio-opt input{ width:auto; }
+  .field-err{ color:var(--bad); font-size:12.5px; margin-top:4px; display:none; }
+  .field-err.show{ display:block; }
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--navy); color:#fff; border:none; border-radius:8px;
+    padding:13px 20px; font-size:15.5px; font-weight:600; cursor:pointer; width:100%;
+    font-family:inherit;
+  }
+  .btn:disabled{ opacity:0.55; cursor:not-allowed; }
+  .btn.secondary{ background:transparent; color:var(--navy); border:1px solid var(--navy); }
+  .btn.gold{ background:var(--gold); color:var(--navy-deep); }
+  .btn-row{ display:flex; gap:10px; margin-top:16px; }
+  .btn-row .btn{ width:auto; flex:1; }
+
+  .fee-box{
+    display:flex; justify-content:space-between; align-items:center;
+    background:var(--gold-soft); border-radius:8px; padding:12px 14px; margin-top:14px;
+  }
+  .fee-box .amt{ font-family:'Playfair Display',serif; font-size:22px; font-weight:700; color:var(--navy-deep); }
+
+  /* payment screen */
+  .qr-box{ display:flex; flex-direction:column; align-items:center; gap:10px; padding:10px 0 6px; }
+  #qrcode{ background:#fff; padding:10px; border-radius:8px; }
+  .upi-link{
+    display:block; text-align:center; text-decoration:none; background:var(--navy); color:#fff;
+    padding:12px; border-radius:8px; font-weight:600; margin-top:8px;
+  }
+  .divider{ text-align:center; color:var(--ink-soft); font-size:12.5px; margin:14px 0; }
+
+  /* receipt */
+  #receipt-render{ background:var(--paper-raised); border:1px solid var(--line); border-top:4px solid var(--navy); border-radius:var(--radius); padding:22px; }
+  .r-head{ text-align:center; border-bottom:2px double var(--line); padding-bottom:14px; margin-bottom:14px; }
+  .r-regno{ font-family:'Playfair Display',serif; font-weight:700; font-size:21px; color:var(--navy); margin-top:8px; letter-spacing:0.03em; }
+  .r-row{ display:flex; justify-content:space-between; font-size:14px; padding:5px 0; border-bottom:1px solid var(--line); }
+  .r-row span:first-child{ color:var(--ink-soft); }
+  .r-row span:last-child{ font-weight:600; text-align:right; }
+  .paid-badge{ display:inline-block; background:var(--good); color:#fff; font-size:12px; padding:3px 10px; border-radius:12px; margin-top:8px; }
+
+  .msg{ font-size:13.5px; padding:10px 12px; border-radius:8px; margin-top:10px; }
+  .msg.err{ background:#F6DEDA; color:var(--bad); }
+  .msg.ok{ background:#DCEFE2; color:var(--good); }
+  footer{ text-align:center; font-size:12px; color:var(--ink-soft); padding:26px 18px 10px; }
+  footer a{ color:var(--ink-soft); }
+</style>
+</head>
+<body>
+
+<!-- ============ CONFIG BANNER (only visible to admin / console) ============ -->
+<div class="wrap" id="config-banner" style="display:none;">
+  <div class="msg err" style="margin-top:14px;">
+    Database not yet connected — running in local demo mode. Submissions are saved only in this browser until Supabase is configured (see CONFIG at top of the file).
+  </div>
+</div>
+
+<header class="letterhead">
+  <div class="wrap">
+    <div class="lh-row">
+      <svg class="lh-seal" width="60" height="60" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="NBCI seal">
+        <circle cx="50" cy="50" r="47" fill="#0B1B27" stroke="#C99A34" stroke-width="3"/>
+        <circle cx="50" cy="50" r="39" fill="none" stroke="#C99A34" stroke-width="1"/>
+        <rect x="29" y="35" width="42" height="33" fill="none" stroke="#F0EBDC" stroke-width="2"/>
+        <line x1="37.6" y1="35" x2="37.6" y2="68" stroke="#F0EBDC" stroke-width="1.4"/>
+        <line x1="50" y1="35" x2="50" y2="68" stroke="#F0EBDC" stroke-width="1.4"/>
+        <line x1="62.4" y1="35" x2="62.4" y2="68" stroke="#F0EBDC" stroke-width="1.4"/>
+        <circle cx="37.6" cy="43" r="3.4" fill="#C99A34"/>
+        <circle cx="50" cy="49" r="3.4" fill="#C99A34"/>
+        <circle cx="62.4" cy="43" r="3.4" fill="#C99A34"/>
+        <circle cx="37.6" cy="59" r="3.4" fill="#A63A34"/>
+        <circle cx="50" cy="61" r="3.4" fill="#A63A34"/>
+        <circle cx="62.4" cy="59" r="3.4" fill="#A63A34"/>
+        <text x="50" y="25" font-family="Georgia, serif" font-size="9" font-weight="700" fill="#F0EBDC" text-anchor="middle" letter-spacing="1">NBCI</text>
+      </svg>
+      <div class="lh-text">
+        <div class="lh-name">National Bright Computer Institute</div>
+        <div class="lh-sub">Computer &amp; Abacus Training Centre</div>
+        <div class="lh-addr">Opp. Mathabhanga High School, Mathabhanga, Cooch Behar – 736146</div>
+      </div>
+    </div>
+    <div class="lh-rule"></div>
+    <h1>Abacus Competition 2026</h1>
+    <div class="lh-tag">Abacus &amp; Mental Mathematics — Official Registration Form</div>
+    <div class="event-facts">
+      <div><span>Date</span>25th December 2026</div>
+      <div><span>Venue</span>NBCI, Mathabhanga</div>
+      <div><span>Registration Fee</span>₹75 via UPI</div>
+      <div><span>Contact</span>+91 9635160191</div>
+    </div>
+    <div class="contact">+91 9635160191 · +91 9800002167</div>
+  </div>
+</header>
+
+<div class="steps" id="steps">
+  <div class="step-dot active" data-step="1"></div>
+  <div class="step-dot" data-step="2"></div>
+  <div class="step-dot" data-step="3"></div>
+</div>
+
+<main class="wrap">
+
+  <!-- ================= SCREEN 1: REGISTRATION FORM ================= -->
+  <section class="screen active" id="screen-register">
+    <form id="reg-form" novalidate>
+
+      <div class="card" id="centre-card" style="border-top-color:var(--gold);">
+        <div class="sec-head"><span class="sec-num" style="background:var(--gold);color:var(--navy-deep);">✓</span><h2>Select Registration Centre</h2></div>
+        <div class="hint">Choose the NBCI centre you are registering from.</div>
+        <div class="centre-select">
+          <label>Registration Centre <span class="req">*</span></label>
+          <select name="centre" required>
+            <option value="" disabled selected>Select centre</option>
+            <option>Mathabhanga</option>
+            <option>Jamalda</option>
+            <option>Nishiganj</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="sec-head"><span class="sec-num">1</span><h2>Participant Details</h2></div>
+        <div class="hint">Details of the student taking part in the competition.</div>
+
+        <label>Student Name <span class="req">*</span></label>
+        <input type="text" name="student_name" required>
+
+        <label>Date of Birth <span class="req">*</span></label>
+        <input type="date" name="dob" required id="dob-input">
+
+        <label>Age <span class="req">*</span></label>
+        <input type="number" name="age" min="1" max="25" required id="age-input">
+
+        <label>Gender <span class="req">*</span></label>
+        <div class="radio-row">
+          <label class="radio-opt"><input type="radio" name="gender" value="Male" required> Male</label>
+          <label class="radio-opt"><input type="radio" name="gender" value="Female"> Female</label>
+          <label class="radio-opt"><input type="radio" name="gender" value="Other"> Other</label>
+        </div>
+
+        <label>Class / Grade <span class="req">*</span></label>
+        <input type="text" name="class_grade" required placeholder="e.g. Class 4">
+
+        <label>School Name <span class="req">*</span></label>
+        <input type="text" name="school_name" required>
+
+        <label>School Address</label>
+        <input type="text" name="school_address">
+      </div>
+
+      <div class="card">
+        <div class="sec-head"><span class="sec-num">2</span><h2>Parent / Guardian Details</h2></div>
+
+        <label>Father's / Mother's / Guardian's Name <span class="req">*</span></label>
+        <input type="text" name="guardian_name" required>
+
+        <label>Parent / Guardian Mobile Number <span class="req">*</span></label>
+        <input type="tel" name="guardian_mobile" required placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10">
+        <div class="field-err" id="err-mobile">Enter a valid 10-digit mobile number.</div>
+
+        <label>WhatsApp Number</label>
+        <input type="tel" name="whatsapp_number" placeholder="If different from above" maxlength="10">
+
+        <label>Email ID</label>
+        <input type="email" name="email">
+      </div>
+
+      <div class="card">
+        <div class="sec-head"><span class="sec-num">3</span><h2>Abacus Details</h2></div>
+
+        <label>Abacus Learning Level <span class="req">*</span></label>
+        <select name="abacus_level" id="abacus-level" required>
+          <option value="" disabled selected>Select level</option>
+          <option>Beginner</option>
+          <option>Level 1</option>
+          <option>Level 2</option>
+          <option>Level 3</option>
+          <option>Level 4</option>
+          <option>Level 5</option>
+          <option>Other</option>
+        </select>
+        <input type="text" name="abacus_level_other" id="abacus-level-other" placeholder="Please specify" style="display:none; margin-top:8px;">
+
+        <label>Do you have previous Abacus competition experience?</label>
+        <div class="radio-row">
+          <label class="radio-opt"><input type="radio" name="prior_experience" value="Yes"> Yes</label>
+          <label class="radio-opt"><input type="radio" name="prior_experience" value="No" checked> No</label>
+        </div>
+
+        <div class="fee-box">
+          <div>
+            <div style="font-size:12.5px;color:var(--ink-soft);">Registration Fee</div>
+            <div style="font-size:12.5px;color:var(--ink-soft);">Payment Method: UPI</div>
+          </div>
+          <div class="amt">₹75</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="sec-head"><span class="sec-num">4</span><h2>Declaration</h2></div>
+        <label class="radio-opt" style="margin-top:6px;">
+          <input type="checkbox" name="declaration" required id="declaration-check">
+          <span>I confirm that the information provided above is correct and I agree to follow the rules and guidelines of the Abacus Competition 2026.</span>
+        </label>
+
+        <label>Parent / Guardian Name (typed as signature) <span class="req">*</span></label>
+        <input type="text" name="signature_name" required placeholder="Type full name to sign">
+
+        <label>Date</label>
+        <input type="text" id="today-date" disabled>
+      </div>
+
+      <button type="submit" class="btn gold" id="to-payment-btn">Continue to Payment →</button>
+    </form>
+  </section>
+
+  <!-- ================= SCREEN 2: PAYMENT ================= -->
+  <section class="screen" id="screen-payment">
+    <div class="card">
+      <h2>Pay Registration Fee</h2>
+      <div class="hint">Scan the QR code with any UPI app (GPay, PhonePe, Paytm) and pay the exact amount shown, then enter the transaction reference below.</div>
+
+      <div class="qr-box">
+        <div id="qrcode"></div>
+        <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:24px;color:var(--navy);">₹75</div>
+        <div style="font-size:13px;color:var(--ink-soft);" id="upi-vpa-display"></div>
+      </div>
+      <a href="#" class="upi-link" id="upi-app-link">Pay with UPI app</a>
+
+      <div class="divider">— after paying —</div>
+
+      <label>UPI Transaction ID / UTR Number <span class="req">*</span></label>
+      <input type="text" id="utr-input" placeholder="12-digit UTR from your payment app" required>
+      <div class="field-err" id="err-utr">Please enter the UTR / transaction reference number.</div>
+
+      <div class="btn-row">
+        <button type="button" class="btn secondary" id="back-to-form-btn">← Back</button>
+        <button type="button" class="btn gold" id="submit-registration-btn">Submit Registration</button>
+      </div>
+      <div class="msg err" id="submit-error" style="display:none;"></div>
+    </div>
+  </section>
+
+  <!-- ================= SCREEN 3: RECEIPT ================= -->
+  <section class="screen" id="screen-receipt">
+    <div id="receipt-render">
+      <div class="r-head">
+        <div style="font-size:12.5px;color:var(--ink-soft);letter-spacing:0.02em;">NATIONAL BRIGHT COMPUTER INSTITUTE</div>
+        <h2 style="margin-top:4px;">Abacus Competition 2026</h2>
+        <div style="font-size:13px;color:var(--ink-soft);margin-top:4px;">Payment Receipt</div>
+        <div class="r-regno" id="r-regno">NBCI/2026/000</div>
+      </div>
+      <div class="r-row"><span>Registration Centre</span><span id="r-centre"></span></div>
+      <div class="r-row"><span>Student Name</span><span id="r-name"></span></div>
+      <div class="r-row"><span>Class / Grade</span><span id="r-class"></span></div>
+      <div class="r-row"><span>School</span><span id="r-school"></span></div>
+      <div class="r-row"><span>Guardian</span><span id="r-guardian"></span></div>
+      <div class="r-row"><span>Mobile</span><span id="r-mobile"></span></div>
+      <div class="r-row"><span>Abacus Level</span><span id="r-level"></span></div>
+      <div class="r-row"><span>Amount Paid</span><span id="r-amount"></span></div>
+      <div class="r-row"><span>UTR / Transaction ID</span><span id="r-utr"></span></div>
+      <div class="r-row"><span>Submitted On</span><span id="r-date"></span></div>
+      <div style="text-align:center;"><span class="paid-badge">✓ Registration Confirmed</span></div>
+    </div>
+    <button class="btn gold" id="download-receipt-btn" style="margin-top:16px;">Download Receipt</button>
+    <div style="font-size:12.5px;color:var(--ink-soft);text-align:center;margin-top:10px;">Please keep this receipt safe. Bring a printed or digital copy on the day of the competition.</div>
+  </section>
+
+</main>
+
+<footer>
+  Abacus Competition 2026 · National Bright Computer Institute<br>
+  <span style="font-size:10px;opacity:0.6;">build v5</span>
+</footer>
+
+<script>
+/* ======================================================================
+   CONFIG — replace these before going live
+   ====================================================================== */
+const CONFIG = {
+  SUPABASE_URL: "https://lcsaclmerxmhfqtarkxn.supabase.co",
+  SUPABASE_ANON_KEY: "sb_publishable_HMZFgnCf5DZ4ropMDswdHg_zkq4eWej",
+  UPI_VPA: "abhijitmodak72-1@okicici",
+  UPI_PAYEE_NAME: "National Bright Computer Institute",
+  FEE_AMOUNT: 75,
+  YEAR: 2026
+};
+
+const isConfigured = !CONFIG.SUPABASE_URL.startsWith("YOUR_") && !CONFIG.SUPABASE_ANON_KEY.startsWith("YOUR_");
+let sb = null;
+if (isConfigured && window.supabase) {
+  sb = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+} else {
+  document.getElementById('config-banner').style.display = 'block';
+  console.warn("Supabase not configured — using local demo storage. Registrations will not be saved permanently.");
+}
+
+/* ---------------- Demo (local) storage fallback ---------------- */
+const DEMO_KEY = "nbci_abacus_demo_registrations";
+function demoGetAll(){
+  try { return JSON.parse(localStorage.getItem(DEMO_KEY) || "[]"); } catch(e){ return []; }
+}
+function demoSaveAll(rows){
+  try { localStorage.setItem(DEMO_KEY, JSON.stringify(rows)); } catch(e){ console.error(e); }
+}
+
+/* ---------------- Data layer: works with Supabase or demo storage ---------------- */
+async function insertRegistration(payload){
+  if (sb) {
+    const { data, error } = await sb.rpc('submit_registration', {
+      p_centre: payload.centre,
+      p_student_name: payload.student_name,
+      p_dob: payload.dob,
+      p_age: payload.age,
+      p_gender: payload.gender,
+      p_class_grade: payload.class_grade,
+      p_school_name: payload.school_name,
+      p_school_address: payload.school_address,
+      p_guardian_name: payload.guardian_name,
+      p_guardian_mobile: payload.guardian_mobile,
+      p_whatsapp_number: payload.whatsapp_number,
+      p_email: payload.email,
+      p_abacus_level: payload.abacus_level,
+      p_prior_experience: payload.prior_experience,
+      p_fee_amount: payload.fee_amount,
+      p_payment_method: payload.payment_method,
+      p_utr_number: payload.utr_number,
+      p_signature_name: payload.signature_name,
+      p_declaration_signed: payload.declaration_signed
+    });
+    if (error) throw error;
+    return data;
+  } else {
+    const rows = demoGetAll();
+    const seq = rows.length + 1;
+    const row = Object.assign({}, payload, {
+      id: seq,
+      reg_no: "NBCI/" + CONFIG.YEAR + "/" + String(seq).padStart(3, "0"),
+      submitted_at: new Date().toISOString()
+    });
+    rows.push(row);
+    demoSaveAll(rows);
+    return row;
+  }
+}
+async function fetchAllRegistrations(){
+  if (sb) {
+    const { data, error } = await sb.from('registrations').select('*').order('id', { ascending: true });
+    if (error) throw error;
+    return data;
+  } else {
+    return demoGetAll();
+  }
+}
+
+/* ---------------- Helpers ---------------- */
+const form = document.getElementById('reg-form');
+const screens = {
+  register: document.getElementById('screen-register'),
+  payment: document.getElementById('screen-payment'),
+  receipt: document.getElementById('screen-receipt')
+};
+const stepDots = document.querySelectorAll('.step-dot');
+
+function showScreen(name, stepIndex){
+  Object.values(screens).forEach(s => s.classList.remove('active'));
+  screens[name].classList.add('active');
+  stepDots.forEach((d,i) => {
+    d.classList.toggle('active', i === stepIndex - 1);
+    d.classList.toggle('done', i < stepIndex - 1);
+  });
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+document.getElementById('today-date').value = new Date().toLocaleDateString('en-IN', { day:'2-digit', month:'long', year:'numeric' });
+
+document.getElementById('dob-input').addEventListener('change', function(){
+  const dob = new Date(this.value);
+  if (!isNaN(dob)) {
+    const diff = new Date(Date.now() - dob.getTime());
+    const age = Math.abs(diff.getUTCFullYear() - 1970);
+    document.getElementById('age-input').value = age;
+  }
+});
+
+document.getElementById('abacus-level').addEventListener('change', function(){
+  document.getElementById('abacus-level-other').style.display = (this.value === 'Other') ? 'block' : 'none';
+});
+
+let formData = null;
+
+form.addEventListener('submit', function(e){
+  e.preventDefault();
+
+  const mobile = form.guardian_mobile.value.trim();
+  const mobileOk = /^[0-9]{10}$/.test(mobile);
+  document.getElementById('err-mobile').classList.toggle('show', !mobileOk);
+  if (!form.reportValidity() || !mobileOk) return;
+
+  const fd = new FormData(form);
+  formData = {
+    centre: fd.get('centre'),
+    student_name: fd.get('student_name').trim(),
+    dob: fd.get('dob'),
+    age: parseInt(fd.get('age'), 10),
+    gender: fd.get('gender'),
+    class_grade: fd.get('class_grade').trim(),
+    school_name: fd.get('school_name').trim(),
+    school_address: (fd.get('school_address') || '').trim(),
+    guardian_name: fd.get('guardian_name').trim(),
+    guardian_mobile: mobile,
+    whatsapp_number: (fd.get('whatsapp_number') || '').trim(),
+    email: (fd.get('email') || '').trim(),
+    abacus_level: fd.get('abacus_level') === 'Other' ? ('Other: ' + (fd.get('abacus_level_other')||'').trim()) : fd.get('abacus_level'),
+    prior_experience: fd.get('prior_experience') === 'Yes',
+    fee_amount: CONFIG.FEE_AMOUNT,
+    payment_method: 'UPI',
+    signature_name: fd.get('signature_name').trim(),
+    declaration_signed: true
+  };
+
+  buildPaymentScreen();
+  showScreen('payment', 2);
+});
+
+function buildPaymentScreen(){
+  document.getElementById('qrcode').innerHTML = '';
+  const upiUrl = "upi://pay?pa=" + encodeURIComponent(CONFIG.UPI_VPA) +
+                 "&pn=" + encodeURIComponent(CONFIG.UPI_PAYEE_NAME) +
+                 "&am=" + CONFIG.FEE_AMOUNT +
+                 "&cu=INR&tn=" + encodeURIComponent("Abacus Competition 2026 - " + formData.student_name);
+  new QRCode(document.getElementById('qrcode'), { text: upiUrl, width: 180, height: 180 });
+  document.getElementById('upi-vpa-display').textContent = "UPI ID: " + CONFIG.UPI_VPA;
+  document.getElementById('upi-app-link').href = upiUrl;
+}
+
+document.getElementById('back-to-form-btn').addEventListener('click', function(){
+  showScreen('register', 1);
+});
+
+document.getElementById('submit-registration-btn').addEventListener('click', async function(){
+  const utr = document.getElementById('utr-input').value.trim();
+  const utrOk = utr.length >= 4;
+  document.getElementById('err-utr').classList.toggle('show', !utrOk);
+  if (!utrOk) return;
+
+  const btn = this;
+  btn.disabled = true;
+  btn.textContent = "Submitting...";
+  document.getElementById('submit-error').style.display = 'none';
+
+  try {
+    const payload = Object.assign({}, formData, { utr_number: utr });
+    const row = await insertRegistration(payload);
+    showReceipt(row);
+    showScreen('receipt', 3);
+  } catch (err) {
+    console.error(err);
+    document.getElementById('submit-error').textContent = "Could not submit registration. " + (err && err.message ? err.message : "Please check your connection and try again.");
+    document.getElementById('submit-error').style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Submit Registration";
+  }
+});
+
+let receiptBlobUrl = null;
+
+function showReceipt(row){
+  document.getElementById('r-regno').textContent = row.reg_no;
+  document.getElementById('r-centre').textContent = row.centre;
+  document.getElementById('r-name').textContent = row.student_name;
+  document.getElementById('r-class').textContent = row.class_grade;
+  document.getElementById('r-school').textContent = row.school_name;
+  document.getElementById('r-guardian').textContent = row.guardian_name;
+  document.getElementById('r-mobile').textContent = row.guardian_mobile;
+  document.getElementById('r-level').textContent = row.abacus_level;
+  document.getElementById('r-amount').textContent = "₹" + row.fee_amount + " (UPI)";
+  document.getElementById('r-utr').textContent = row.utr_number;
+  document.getElementById('r-date').textContent = new Date(row.submitted_at).toLocaleString('en-IN');
+
+  if (receiptBlobUrl) { URL.revokeObjectURL(receiptBlobUrl); receiptBlobUrl = null; }
+  html2canvas(document.getElementById('receipt-render'), { backgroundColor: '#ffffff', scale: 2, useCORS: true })
+    .then(canvas => new Promise(res => canvas.toBlob(res, 'image/png')))
+    .then(blob => { if (blob) receiptBlobUrl = URL.createObjectURL(blob); })
+    .catch(err => console.error('Receipt pre-render failed:', err));
+}
+
+document.getElementById('download-receipt-btn').addEventListener('click', async function(){
+  const btn = this;
+  const original = btn.textContent;
+  const regNo = document.getElementById('r-regno').textContent.replace(/\//g, '-');
+
+  const doDownload = (blobUrl) => {
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = `Receipt_${regNo}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  if (receiptBlobUrl) {
+    doDownload(receiptBlobUrl);
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = "Preparing...";
+  try {
+    const canvas = await html2canvas(document.getElementById('receipt-render'), { backgroundColor: '#ffffff', scale: 2, useCORS: true });
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    if (!blob) throw new Error('Could not generate image.');
+    receiptBlobUrl = URL.createObjectURL(blob);
+    doDownload(receiptBlobUrl);
+  } catch (err) {
+    console.error(err);
+    alert("Could not download the receipt image. Please take a screenshot of this page instead.");
+  } finally {
+    btn.disabled = false; btn.textContent = original;
+  }
+});
+
+</script>
+</body>
+</html>
