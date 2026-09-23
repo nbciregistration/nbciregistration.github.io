@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <style>
   :root{
     --paper:#F7F5EF;
@@ -322,24 +322,16 @@
   <section class="screen" id="screen-payment">
     <div class="card">
       <h2>Pay Registration Fee</h2>
-      <div class="hint">Scan the QR code with any UPI app (GPay, PhonePe, Paytm) and pay the exact amount shown, then enter the transaction reference below.</div>
+      <div class="hint">Click the button below to pay securely via card, UPI, netbanking or wallet. Your registration will be submitted automatically as soon as the payment is confirmed.</div>
 
       <div class="qr-box">
-        <div id="qrcode"></div>
-        <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:24px;color:var(--navy);">₹75</div>
-        <div style="font-size:13px;color:var(--ink-soft);" id="upi-vpa-display"></div>
+        <div style="font-family:'Playfair Display',serif;font-weight:700;font-size:28px;color:var(--navy);">₹75</div>
+        <div style="font-size:13px;color:var(--ink-soft);">Registration Fee — Abacus Competition 2026</div>
       </div>
-      <a href="#" class="upi-link" id="upi-app-link">Pay with UPI app</a>
-
-      <div class="divider">— after paying —</div>
-
-      <label>UPI Transaction ID / UTR Number <span class="req">*</span></label>
-      <input type="text" id="utr-input" placeholder="12-digit UTR from your payment app" required>
-      <div class="field-err" id="err-utr">Please enter the UTR / transaction reference number.</div>
 
       <div class="btn-row">
         <button type="button" class="btn secondary" id="back-to-form-btn">← Back</button>
-        <button type="button" class="btn gold" id="submit-registration-btn">Submit Registration</button>
+        <button type="button" class="btn gold" id="pay-now-btn">Pay ₹75 Now →</button>
       </div>
       <div class="msg err" id="submit-error" style="display:none;"></div>
     </div>
@@ -362,7 +354,7 @@
       <div class="r-row"><span>Mobile</span><span id="r-mobile"></span></div>
       <div class="r-row"><span>Abacus Level</span><span id="r-level"></span></div>
       <div class="r-row"><span>Amount Paid</span><span id="r-amount"></span></div>
-      <div class="r-row"><span>UTR / Transaction ID</span><span id="r-utr"></span></div>
+      <div class="r-row"><span>Payment Reference ID</span><span id="r-utr"></span></div>
       <div class="r-row"><span>Submitted On</span><span id="r-date"></span></div>
       <div style="text-align:center;"><span class="paid-badge">✓ Registration Confirmed</span></div>
     </div>
@@ -386,6 +378,7 @@ const CONFIG = {
   SUPABASE_ANON_KEY: "sb_publishable_HMZFgnCf5DZ4ropMDswdHg_zkq4eWej",
   UPI_VPA: "abhijitmodak72-1@okicici",
   UPI_PAYEE_NAME: "National Bright Computer Institute",
+  RAZORPAY_KEY_ID: "sandip",   // <-- replace "sandip" with your real Razorpay Key ID (rzp_test_... or rzp_live_...). Never put the Key Secret here.
   FEE_AMOUNT: 75,
   YEAR: 2026
 };
@@ -528,44 +521,84 @@ form.addEventListener('submit', function(e){
 });
 
 function buildPaymentScreen(){
-  document.getElementById('qrcode').innerHTML = '';
-  const upiUrl = "upi://pay?pa=" + encodeURIComponent(CONFIG.UPI_VPA) +
-                 "&pn=" + encodeURIComponent(CONFIG.UPI_PAYEE_NAME) +
-                 "&am=" + CONFIG.FEE_AMOUNT +
-                 "&cu=INR&tn=" + encodeURIComponent("Abacus Competition 2026 - " + formData.student_name);
-  new QRCode(document.getElementById('qrcode'), { text: upiUrl, width: 180, height: 180 });
-  document.getElementById('upi-vpa-display').textContent = "UPI ID: " + CONFIG.UPI_VPA;
-  document.getElementById('upi-app-link').href = upiUrl;
+  document.getElementById('submit-error').style.display = 'none';
+  const btn = document.getElementById('pay-now-btn');
+  btn.disabled = false;
+  btn.textContent = "Pay ₹" + CONFIG.FEE_AMOUNT + " Now →";
 }
 
 document.getElementById('back-to-form-btn').addEventListener('click', function(){
   showScreen('register', 1);
 });
 
-document.getElementById('submit-registration-btn').addEventListener('click', async function(){
-  const utr = document.getElementById('utr-input').value.trim();
-  const utrOk = utr.length >= 4;
-  document.getElementById('err-utr').classList.toggle('show', !utrOk);
-  if (!utrOk) return;
-
+document.getElementById('pay-now-btn').addEventListener('click', function(){
   const btn = this;
-  btn.disabled = true;
-  btn.textContent = "Submitting...";
   document.getElementById('submit-error').style.display = 'none';
 
-  try {
-    const payload = Object.assign({}, formData, { utr_number: utr });
-    const row = await insertRegistration(payload);
-    showReceipt(row);
-    showScreen('receipt', 3);
-  } catch (err) {
-    console.error(err);
-    document.getElementById('submit-error').textContent = "Could not submit registration. " + (err && err.message ? err.message : "Please check your connection and try again.");
+  if (!CONFIG.RAZORPAY_KEY_ID || CONFIG.RAZORPAY_KEY_ID === "sandip") {
+    document.getElementById('submit-error').textContent = "Payment is not configured yet. Please contact the organiser (Razorpay Key ID missing).";
     document.getElementById('submit-error').style.display = 'block';
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Submit Registration";
+    return;
   }
+
+  btn.disabled = true;
+  btn.textContent = "Opening payment...";
+
+  const options = {
+    key: CONFIG.RAZORPAY_KEY_ID,
+    amount: CONFIG.FEE_AMOUNT * 100, // amount in paise
+    currency: "INR",
+    name: CONFIG.UPI_PAYEE_NAME,
+    description: "Abacus Competition " + CONFIG.YEAR + " - Registration Fee",
+    prefill: {
+      name: formData.guardian_name,
+      contact: formData.guardian_mobile,
+      email: formData.email || ""
+    },
+    notes: {
+      student_name: formData.student_name,
+      centre: formData.centre
+    },
+    theme: { color: "#12293A" },
+    handler: async function(response){
+      // Payment succeeded — auto-submit the registration using the Razorpay payment ID as the reference.
+      btn.textContent = "Submitting registration...";
+      try {
+        const payload = Object.assign({}, formData, {
+          payment_method: 'Razorpay',
+          utr_number: response.razorpay_payment_id
+        });
+        const row = await insertRegistration(payload);
+        showReceipt(row);
+        showScreen('receipt', 3);
+      } catch (err) {
+        console.error(err);
+        document.getElementById('submit-error').textContent = "Payment succeeded, but we could not save your registration automatically. Please contact the organiser with this payment ID: " + response.razorpay_payment_id + (err && err.message ? " (" + err.message + ")" : "");
+        document.getElementById('submit-error').style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Pay ₹" + CONFIG.FEE_AMOUNT + " Now →";
+      }
+    },
+    modal: {
+      ondismiss: function(){
+        // User closed the payment popup without paying.
+        btn.disabled = false;
+        btn.textContent = "Pay ₹" + CONFIG.FEE_AMOUNT + " Now →";
+      }
+    }
+  };
+
+  const rzp = new Razorpay(options);
+  rzp.on('payment.failed', function(response){
+    document.getElementById('submit-error').textContent = "Payment failed: " + (response.error && response.error.description ? response.error.description : "Please try again.");
+    document.getElementById('submit-error').style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = "Pay ₹" + CONFIG.FEE_AMOUNT + " Now →";
+  });
+  rzp.open();
+  btn.textContent = "Pay ₹" + CONFIG.FEE_AMOUNT + " Now →";
+  btn.disabled = false;
 });
 
 let receiptBlobUrl = null;
@@ -579,7 +612,7 @@ function showReceipt(row){
   document.getElementById('r-guardian').textContent = row.guardian_name;
   document.getElementById('r-mobile').textContent = row.guardian_mobile;
   document.getElementById('r-level').textContent = row.abacus_level;
-  document.getElementById('r-amount').textContent = "₹" + row.fee_amount + " (UPI)";
+  document.getElementById('r-amount').textContent = "₹" + row.fee_amount + " (" + (row.payment_method || 'UPI') + ")";
   document.getElementById('r-utr').textContent = row.utr_number;
   document.getElementById('r-date').textContent = new Date(row.submitted_at).toLocaleString('en-IN');
 
