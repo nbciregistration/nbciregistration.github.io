@@ -378,7 +378,7 @@ const CONFIG = {
   SUPABASE_ANON_KEY: "sb_publishable_HMZFgnCf5DZ4ropMDswdHg_zkq4eWej",
   UPI_VPA: "abhijitmodak72-1@okicici",
   UPI_PAYEE_NAME: "National Bright Computer Institute",
-  RAZORPAY_KEY_ID: "rzp_test_TfTrB8J2hveCS",   // <-- replace "sandip" with your real Razorpay Key ID (rzp_test_... or rzp_live_...). Never put the Key Secret here.
+  RAZORPAY_KEY_ID: "rzp_test_TfUJg65IrCXUIr",   // <-- replace "sandip" with your real Razorpay Key ID (rzp_test_... or rzp_live_...). Never put the Key Secret here.
   FEE_AMOUNT: 75,
   YEAR: 2026
 };
@@ -535,7 +535,7 @@ document.getElementById('pay-now-btn').addEventListener('click', function(){
   const btn = this;
   document.getElementById('submit-error').style.display = 'none';
 
-  if (!CONFIG.RAZORPAY_KEY_ID || CONFIG.RAZORPAY_KEY_ID === "rzp_test_TfTrB8J2rhveCS") {
+  if (!CONFIG.RAZORPAY_KEY_ID || CONFIG.RAZORPAY_KEY_ID === "rzp_test_TfUJg65IrCXUIr") {
     document.getElementById('submit-error').textContent = "Payment is not configured yet. Please contact the organiser (Razorpay Key ID missing).";
     document.getElementById('submit-error').style.display = 'block';
     return;
